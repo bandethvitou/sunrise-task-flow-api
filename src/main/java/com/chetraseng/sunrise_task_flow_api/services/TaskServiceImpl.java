@@ -1,14 +1,13 @@
 package com.chetraseng.sunrise_task_flow_api.services;
 
 import com.chetraseng.sunrise_task_flow_api.dto.TaskResponse;
+import com.chetraseng.sunrise_task_flow_api.exception.ResourceNotFoundException;
 import com.chetraseng.sunrise_task_flow_api.mapper.TaskMapper;
 import com.chetraseng.sunrise_task_flow_api.model.TaskModel;
 import com.chetraseng.sunrise_task_flow_api.repository.TaskRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,8 +21,11 @@ public class TaskServiceImpl implements TaskService {
   }
 
   @Override
-  public Optional<TaskResponse> findById(Long id) {
-    return taskRepository.findById(id).map(taskMapper::toTaskResponse);
+  public TaskResponse findById(Long id) {
+    return taskRepository
+        .findById(id)
+        .map(taskMapper::toTaskResponse)
+        .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
   }
 
   @Override
@@ -31,40 +33,34 @@ public class TaskServiceImpl implements TaskService {
     TaskModel task = new TaskModel();
     task.setTitle(title);
     task.setDescription(description);
-    TaskModel savedTask = taskRepository.save(task);
-    return taskMapper.toTaskResponse(savedTask);
+    return taskMapper.toTaskResponse(taskRepository.save(task));
   }
 
   @Override
-  public Optional<TaskResponse> update(Long id, String title, String description) {
-    Optional<TaskModel> optionalTask = taskRepository.findById(id);
-
-    if (optionalTask.isEmpty()) {
-      return Optional.empty();
-    }
-
-    TaskModel task = optionalTask.get();
+  public TaskResponse update(Long id, String title, String description) {
+    TaskModel task =
+        taskRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
     task.setTitle(title);
     task.setDescription(description);
-    TaskModel savedTask = taskRepository.save(task);
-    TaskResponse response = taskMapper.toTaskResponse(savedTask);
-    return Optional.of(response);
+    return taskMapper.toTaskResponse(taskRepository.save(task));
   }
 
   @Override
-  public Optional<TaskResponse> complete(Long id) {
-    Optional<TaskModel> optionalTask = taskRepository.findById(id);
-    if (optionalTask.isEmpty()) {
-      return Optional.empty();
-    }
-    TaskModel task = optionalTask.get();
+  public TaskResponse complete(Long id) {
+    TaskModel task =
+        taskRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
     task.setCompleted(true);
-    TaskModel savedTask = taskRepository.save(task);
-    return Optional.of(taskMapper.toTaskResponse(savedTask));
+    return taskMapper.toTaskResponse(taskRepository.save(task));
   }
 
   @Override
-  public boolean delete(Long id) {
-    return taskRepository.delete(id);
+  public void delete(Long id) {
+    if (!taskRepository.delete(id)) {
+      throw new ResourceNotFoundException("Task not found with id: " + id);
+    }
   }
 }

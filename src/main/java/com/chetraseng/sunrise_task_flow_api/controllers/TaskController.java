@@ -3,13 +3,11 @@ package com.chetraseng.sunrise_task_flow_api.controllers;
 import com.chetraseng.sunrise_task_flow_api.dto.TaskRequest;
 import com.chetraseng.sunrise_task_flow_api.dto.TaskResponse;
 import com.chetraseng.sunrise_task_flow_api.services.TaskService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,11 +23,8 @@ public class TaskController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<TaskResponse> getTaskById(@PathVariable Long id) {
-    return taskService
-        .findById(id)
-        .map(ResponseEntity::ok)
-        .orElse(ResponseEntity.notFound().build());
+  public TaskResponse getTaskById(@PathVariable Long id) {
+    return taskService.findById(id);
   }
 
   @PostMapping
@@ -39,25 +34,18 @@ public class TaskController {
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<TaskResponse> updateTask(
-          @PathVariable Long id,
-          @RequestBody TaskRequest request) {
-    Optional<TaskResponse> response = taskService.update(id, request.getTitle(), request.getDescription());
-    return response.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+  public TaskResponse updateTask(@PathVariable Long id, @RequestBody TaskRequest request) {
+    return taskService.update(id, request.getTitle(), request.getDescription());
   }
 
   @PatchMapping("/{id}/complete")
-  public ResponseEntity<TaskResponse> completeTask(@PathVariable Long id) {
-    return taskService.complete(id)
-        .map(ResponseEntity::ok)
-        .orElse(ResponseEntity.notFound().build());
+  public TaskResponse completeTask(@PathVariable Long id) {
+    return taskService.complete(id);
   }
 
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
-    if (taskService.delete(id)) {
-      return ResponseEntity.noContent().build();
-    }
-    return ResponseEntity.notFound().build();
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void deleteTask(@PathVariable Long id) {
+    taskService.delete(id);
   }
 }

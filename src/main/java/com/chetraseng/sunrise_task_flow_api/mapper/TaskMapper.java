@@ -7,5 +7,5 @@ import org.mapstruct.MappingConstants;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface TaskMapper {
-    TaskResponse toTaskResponse(TaskModel task);
+  TaskResponse toTaskResponse(TaskModel task);
 }
